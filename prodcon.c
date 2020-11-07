@@ -153,7 +153,6 @@ void *producer(void *arg)
         sleep(1);
         /* 1. Increment the buffer count (item_no)  */
         next_produced.item_no+=1;
-        printf("ITEM NUMBER prod %d\n", next_produced.item_no);
 
         /* 2. Generate the payload data             */
         for (int i=0 ; i<34 ; i++)
@@ -176,7 +175,6 @@ void *producer(void *arg)
 
         // push item to buffer
         sbuffPush(sBuffer, next_produced);
-        printf("BUffer item number %d\n", next_produced.item_no);
 
         // verify checksum
         if (sBuffer->buffer[sBuffer->in].cksum = ip_checksum(next_produced.payload, PAYLOAD_SIZE)){
@@ -212,6 +210,7 @@ void *consumer(void *arg)
             sleep(1); 
         }
         */
+
         // Wait
         sem_wait(&full);
         pthread_mutex_lock(&mutex);
@@ -223,7 +222,7 @@ void *consumer(void *arg)
 
         // verify noskip
         if (next_consumed.item_no != item_no_prev+1){
-        ////printf("Error: Item skipped. Expected: %i, recieved: %i \n", item_no_prev+1, next_consumed.item_no);
+            printf("Error: Item skipped. Expected: %i, recieved: %i \n", item_no_prev+1, next_consumed.item_no);
             break;
         }
 
@@ -237,6 +236,7 @@ void *consumer(void *arg)
 
         printf("\33[32mConsumed: Item -> shm (no.%i, cksum received: 0x%x. cksum expected: 0x%x, Successful \33[0m \n", sBuffer->buffer[sBuffer->out].item_no, cksum2, cksum1);
 
+        // increment index of out
         incOut(sBuffer);
 
         sem_post(&empty);
