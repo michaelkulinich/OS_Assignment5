@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
         printf("Usage Error: inlcude number of bits \n");
         return -1;
     }
-    if (atoi(argv[1]) > 480) {
-        printf("Usage Error: not enough memory size for that many nitems\n");
+    if (atoi(argv[1]) > 480 || atoi(argv[1]) <= 0) {
+        printf("Usage Error: enter a positive number of items under 480\n");
         return -1;
     }
     nitems = atoi(argv[1]);
@@ -124,24 +124,18 @@ int main(int argc, char *argv[])
     // thread identifier for producer and consumer
     pthread_t prod_id, cons_id;
 
-    // create the threads
     printf("\33[31m Producer is in red \33[0m\n");
     printf("\33[32m Consumer is in green \33[0m\n");
+
+    // create the threads
     pthread_create(&prod_id, NULL, producer, NULL);
     // sleep(5);
     pthread_create(&cons_id, NULL, consumer, NULL);
-    printf("After thread\n");
 
     // join the threads
     pthread_join(prod_id, NULL);
     pthread_join(cons_id, NULL);
 
-    // destroy the semiphores
-    sem_destroy(&empty);
-    sem_destroy(&full);
-
-    // destroy the mutex
-    pthread_mutex_destroy(&mutex);
 
 
 
@@ -154,7 +148,6 @@ int main(int argc, char *argv[])
 /* Producer method */
 void *producer(void *arg)
 {
-    printf("Inside prod\n");
     item next_produced;
     next_produced.item_no = -1;   // changed this from -1
     while (1) {
@@ -194,6 +187,7 @@ void *producer(void *arg)
         incIn(sBuffer);
         sem_post(&full);
         pthread_mutex_unlock(&mutex);
+        usleep(5e3);
     }
 }
 
@@ -201,7 +195,6 @@ void *producer(void *arg)
 /* consumer method */
 void *consumer(void *arg)
 {
-    printf("Inside cons\n");
     item next_consumed;
     next_consumed.item_no = -1;
     int item_no_prev;
@@ -260,6 +253,13 @@ void sig_handler(int sig)
      printf("%s:: Got the Signal %d \n", __FUNCTION__, sig);
     // remove the shared memory object
     shm_unlink(name);
+   
+    // destroy the semiphores
+    sem_destroy(&empty);
+    sem_destroy(&full);
+
+    // destroy the mutex
+    pthread_mutex_destroy(&mutex);
 
     exit(1);
 }
