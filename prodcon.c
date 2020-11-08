@@ -90,10 +90,9 @@ int main(int argc, char *argv[])
     sBuffer->buffer_size = nitems;
     sBuffer->in = 0;
     sBuffer->out = 0;
-    printf("size of struct: %lu", sizeof(sBuffer));
     
 
-    printf("Producer successfully created shared memory object \n");
+    printf("Successfully created shared memory object \n");
 
     // set of thread attrivutes
     // pthread_attr_t attr; 
