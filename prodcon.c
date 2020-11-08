@@ -11,9 +11,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <signal.h>
-
 #include "sharedBuffer.c"
-// #include "ip_checksum.c"
 
 // name of shared memory
 const char *name = "OS-IPC";
