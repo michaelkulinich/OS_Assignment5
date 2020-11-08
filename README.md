@@ -24,7 +24,7 @@ gcc prodcon.c -L. -lip_checksum -o prodcon -lrt -lpthread
 ```
 
 ### Sample output
-<pred><code>
+<pre><code>
  [mk@amk OS_Assignment5]$ ./prodcon 10
 Successfully created shared memory object 
  Producer is in red 
