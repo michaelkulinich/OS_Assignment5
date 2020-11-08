@@ -13,13 +13,13 @@
 #include <signal.h>
 
 #include "sharedBuffer.c"
-#include "ip_checksum.c"
+// #include "ip_checksum.c"
 
 // name of shared memory
 const char *name = "OS-IPC";
 
 // number of items in the shared buffer
-int nitems = 100;  // change this
+int nitems;  // change this
 
 // shared buffer of limited size 100
 sharedBuffer* sBuffer;
@@ -44,7 +44,11 @@ int main(int argc, char *argv[])
         printf("Usage Error: inlcude number of bits \n");
         return -1;
     }
-    // nitems = argv[1];
+    if (atoi(argv[1]) > 480) {
+        printf("Usage Error: not enough memory size for that many nitems\n");
+        return -1;
+    }
+    nitems = atoi(argv[1]);
 
     // set up signal handler to exit peacefully
     struct sigaction act;
@@ -79,9 +83,15 @@ int main(int argc, char *argv[])
 
     // memory map the shared memory object 
     ptr = mmap(0, MMAP_SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0);
+
+    // dynamically allocate memory for the buffer
     sBuffer = (sharedBuffer*)ptr; // we have the pointer to a blank object, just cast it to the abstraction we want to use!
+    sBuffer->buffer = (item *) malloc(nitems * sizeof(item));
+    sBuffer->buffer_size = nitems;
     sBuffer->in = 0;
     sBuffer->out = 0;
+    printf("size of struct: %lu", sizeof(sBuffer));
+    
 
     printf("Producer successfully created shared memory object \n");
 
@@ -148,9 +158,8 @@ void *producer(void *arg)
     printf("Inside prod\n");
     item next_produced;
     next_produced.item_no = -1;   // changed this from -1
-
     while (1) {
-        sleep(1);
+      //  sleep(1);
         /* 1. Increment the buffer count (item_no)  */
         next_produced.item_no+=1;
 
@@ -181,7 +190,7 @@ void *producer(void *arg)
             printf("\33[31mProduced: Item -> shm (no.%d, cksum: 0x%x) \33[0m \n", sBuffer->buffer[sBuffer->in].item_no, sBuffer->buffer[sBuffer->in].cksum);
         } else {
             printf("Corruption Error: item corrupted while being pushed to shared memory \n");
-            break;
+            exit(1);
         }
         incIn(sBuffer);
         sem_post(&full);
@@ -198,9 +207,8 @@ void *consumer(void *arg)
     next_consumed.item_no = -1;
     int item_no_prev;
     int repeat = 0;
-
     while (1) {
-        sleep(1);  /////// change for final version ///////
+        // usleep(2e5);  /////// change for final version ///////
 
         // store item number to check with later
         item_no_prev = next_consumed.item_no;
@@ -232,6 +240,7 @@ void *consumer(void *arg)
 
         if (cksum1 != cksum2){
             printf("Checksum mismatch: received 0x%x, expected 0x%x \n", cksum2, cksum1);
+            exit(1);
         }
 
         printf("\33[32mConsumed: Item -> shm (no.%i, cksum received: 0x%x. cksum expected: 0x%x, Successful \33[0m \n", sBuffer->buffer[sBuffer->out].item_no, cksum2, cksum1);
@@ -241,6 +250,7 @@ void *consumer(void *arg)
 
         sem_post(&empty);
         pthread_mutex_unlock(&mutex);
+        usleep(5e4);
     }
 
 }
