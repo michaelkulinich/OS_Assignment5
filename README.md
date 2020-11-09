@@ -1,7 +1,7 @@
-# OS_Assignment5
+# Operating Systems: Assignment5
 
-## Todo
-Figure out how to do the dynamic memory allocation for nitems. Right now, nitems (which is just BUFFERSIZE in sharedBuffer.c) is set at 1750 as the limit because memsize cant exceed 64000 bytes. I tried estimating what the limit of nitems actually is but I was way wrong. We need the user to enter how many items, nitems, they want in the buffer, and if nitems > 1750, then we should say "not enough memory for that many items". 
+## Task: Using Threads and Mutex/Conting Semaphores for the producer-consumer problem
+The idea is to write a C/C++ program that creates two threads. The first thread is the consumer thread that consumes the data written to a shared memory buffer. The second thread is the producer thread that “produces” the data for the shared memory buffer. In order to prevent a race condition (e.g. the consumer reading before the producer writing) use a mutex semaphore and counting semaphores to coordinate when each thread can safely write or read to/from a common shared memory region. 
 
 
 
