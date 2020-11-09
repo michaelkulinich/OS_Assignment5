@@ -13,10 +13,13 @@ The idea is to write a C/C++ program that creates two threads. The first thread 
 - gcc compiler
 - create a static library for the checksum function
 ```
-gcc -c ip_checksum.c 
+// create the object file
+gcc -c ip_checksum.c                                      
 
+//archive object file to make a static library
 ar -rc libip_checksum.a ip_checksum.o
 
+// tell the compiler to look in our library
 gcc prodcon.c -L. -lip_checksum -o prodcon -lrt -lpthread
 
 ./prodcon [buffer size]
