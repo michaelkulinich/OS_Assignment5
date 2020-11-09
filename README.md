@@ -8,11 +8,10 @@ The idea is to write a C/C++ program that creates two threads. The first thread 
 
 
 ### Compile and Deployment
-In order to compile the project, it is required to have gcc
 
 **Linux**
 - gcc compiler
-
+- create a static library for the checksum function
 ```
 gcc -c ip_checksum.c 
 
