@@ -1,7 +1,14 @@
 # Operating Systems: Assignment 5
+Michael Kulinich
+kulinich@chapman.edu
+
+Ayden Best
+bbest@chapman.edu
+
+CPSC 380-01
 
 ## Task: Using Threads and Mutex/Conting Semaphores for the producer-consumer problem
-The idea is to write a C/C++ program that creates two threads. The first thread is the consumer thread that consumes the data written to a shared memory buffer. The second thread is the producer thread that “produces” the data for the shared memory buffer. In order to prevent a race condition (e.g. the consumer reading before the producer writing) use a mutex semaphore and counting semaphores to coordinate when each thread can safely write or read to/from a common shared memory region. 
+The idea is to write a C/C++ program that creates two threads. The first thread is the consumer thread that consumes the data written to a shared memory buffer. The second thread is the producer thread that “produces” the data for the shared memory buffer. In order to prevent a race condition (e.g. the consumer reading before the producer writing) use a mutex semaphore and counting semaphores to coordinate when each thread can safely write or read to/from a common shared memory region.
 
 
 
@@ -10,7 +17,10 @@ The idea is to write a C/C++ program that creates two threads. The first thread 
 ### Compile and Deployment
 
 **Linux**
-- gcc compiler
+Run 'make'
+
+Makefile operations:
+- use gcc compiler
 - create a static library for the checksum function
 ```
 // create the object file
@@ -29,9 +39,9 @@ gcc prodcon.c -L. -lip_checksum -o prodcon -lrt -lpthread
 ### Sample output
 <pre><code>
  [mk@amk OS_Assignment5]$ ./prodcon 10
-Successfully created shared memory object 
- Producer is in red 
- Consumer is in green 
+Successfully created shared memory object
+ Producer is in red
+ Consumer is in green
 Produced: Item -> shm (no.0, cksum: 0xc3f9)  
 Produced: Item -> shm (no.1, cksum: 0x11a2)  
 Produced: Item -> shm (no.2, cksum: 0xc967)  
@@ -64,5 +74,5 @@ Consumed: Item -> shm (no.9, cksum received: 0x19cf. cksum expected: 0x19cf, Suc
 Produced: Item -> shm (no.19, cksum: 0xff49)  
 Consumed: Item -> shm (no.10, cksum received: 0xc621. cksum expected: 0xc621, Successful  
 Produced: Item -> shm (no.20, cksum: 0x79f1)  
-^Csig_handler:: Got the Signal 2 
+^Csig_handler:: Got the Signal 2
   </code></pre>

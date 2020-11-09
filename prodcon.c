@@ -12,31 +12,45 @@
 #include <semaphore.h>
 #include <signal.h>
 #include "sharedBuffer.c"
+#include "ip_checksum.c"
 
-// name of shared memory
-const char *name = "OS-IPC";
 
-// number of items in the shared buffer
-int nitems;  // change this
 
-// shared buffer of limited size 100
-sharedBuffer* sBuffer;
+///////////////////////
+// Global Objects
+//
 
-// semaphores
-sem_t empty, full;
+    // name of shared memory
+    const char *name = "OS-IPC";
 
-// mutex
-pthread_mutex_t mutex;
+    // number of items in the shared buffer
+    int nitems;  // change this
 
-// check sums
-unsigned short cksum1, cksum2;
+    // shared buffer of limited size of [argument 2]
+    sharedBuffer* sBuffer;
 
-void *producer(void *arg);
-void *consumer(void *arg);
-void sig_handler(int sig);
-/* main method */
-int main(int argc, char *argv[])
-{
+    // semaphores
+    sem_t empty, full;
+
+    // mutex
+    pthread_mutex_t mutex;
+
+    // check sums
+    unsigned short cksum1, cksum2;
+
+    void *producer(void *arg);
+    void *consumer(void *arg);
+    void sig_handler(int sig);
+
+///////////////////////
+
+
+
+///////////////////////
+// Initialize Main Method
+//
+  int main(int argc, char *argv[])
+  {
     // ensure file is executed corrctly
     if (argc != 2) {
         printf("Usage Error: inlcude number of bits \n");
@@ -54,20 +68,27 @@ int main(int argc, char *argv[])
     sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
     sigaction(SIGINT, &act, 0);
+///////////////////////
 
-    ////////////////
-    // Initialize//
-    ///////////////
+
+
+///////////////////////
+// Initialize
+//
 
     // shared memory file descriptor
     int   shm_fd;
 
     // pointer to shared buffer
     void  *ptr;
- 
-    /////////////////////////////////
-    // Set up shared memory object //
-    /////////////////////////////////
+
+///////////////////////
+
+
+
+///////////////////////
+// Set up shared memory object
+//
 
     /* create the shared memory object */
     shm_fd = shm_open(name, O_CREAT | O_RDWR, 0666);
@@ -76,10 +97,10 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    // configure the size of the shared memory object 
+    // configure the size of the shared memory object
     ftruncate(shm_fd, MMAP_SIZE);
 
-    // memory map the shared memory object 
+    // memory map the shared memory object
     ptr = mmap(0, MMAP_SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
     // dynamically allocate memory for the buffer
@@ -88,18 +109,17 @@ int main(int argc, char *argv[])
     sBuffer->buffer_size = nitems;
     sBuffer->in = 0;
     sBuffer->out = 0;
-    
 
-    printf("Successfully created shared memory object \n");
+    /////printf("Successfully created shared memory object \n");
 
-    // set of thread attrivutes
-    // pthread_attr_t attr; 
-
-    // get the default attributes 
-    // pthread_attr_init(&attr);
+///////////////////////
 
 
-    // Semaphore set up //
+
+///////////////////////
+// Locking Mechanics
+//
+
     // create the empty semaphore
     if (sem_init(&empty, 0, nitems) != 0) {
         perror("Semaphore initialization failed");
@@ -112,13 +132,19 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    // Mutex set up //
     // create the mutex
     if (pthread_mutex_init(&mutex, 0)) {
         perror("Semaphore initialization failed");
         return -1;
     }
-    
+
+///////////////////////
+
+
+
+///////////////////////
+// Threads and Process Execution
+//
     // thread identifier for producer and consumer
     pthread_t prod_id, cons_id;
 
@@ -133,23 +159,20 @@ int main(int argc, char *argv[])
     // join the threads
     pthread_join(prod_id, NULL);
     pthread_join(cons_id, NULL);
-
-
-
-
- 
-
 }
-  
-  
+///////////////////////
 
-/* Producer method */
+
+
+///////////////////////
+// Producer Behavior
+//
+
 void *producer(void *arg)
 {
     item next_produced;
-    next_produced.item_no = -1;   // changed this from -1
+    next_produced.item_no = -1;
     while (1) {
-      //  sleep(1);
         /* 1. Increment the buffer count (item_no)  */
         next_produced.item_no+=1;
 
@@ -159,17 +182,14 @@ void *producer(void *arg)
 
         /* 3. Calculate the 16-bit checksum (cksum) */
         next_produced.cksum = ip_checksum(next_produced.payload, PAYLOAD_SIZE);
-        /*
-        // check if buffer is full, wait until it isnt
-        while (!sbuffFull(sBuffer)){
-        ////printf("buffer full: in=%i, out=%i waiting... \n", sBuffer->in, sBuffer->out);
-            sleep(1);
-        }
-        */
-        // wait
+
+        // wait for open space in buffer
         sem_wait(&empty);
+
+        // lock critical section
         pthread_mutex_lock(&mutex);
 
+        /////////////////////
         // critical section
 
         // push item to buffer
@@ -183,14 +203,26 @@ void *producer(void *arg)
             exit(1);
         }
         incIn(sBuffer);
+
+        //
+        /////////////////////
+
+        // signal item has been added
         sem_post(&full);
+
+        // unlock critical section
         pthread_mutex_unlock(&mutex);
         usleep(5e3);
     }
 }
+///////////////////////
 
 
-/* consumer method */
+
+///////////////////////
+// Consumer Behavior
+//
+
 void *consumer(void *arg)
 {
     item next_consumed;
@@ -198,25 +230,22 @@ void *consumer(void *arg)
     int item_no_prev;
     int repeat = 0;
     while (1) {
-        // usleep(2e5);  /////// change for final version ///////
 
         // store item number to check with later
         item_no_prev = next_consumed.item_no;
-        /*
-        // if its empty, wait
-        while (!sbuffEmpty(sBuffer)){
-            sleep(1); 
-        }
-        */
 
-        // Wait
+
+        // wait for item in the buffer
         sem_wait(&full);
+
+        // lock critical section
         pthread_mutex_lock(&mutex);
+
+        /////////////////////
         // critical section
 
-        // remove item
+        // retrieve item
         next_consumed = sbuffPop(sBuffer);
-        // printf("Pulled item no. %i: payload[0]=%d \n", next_consumed.item_no+1, next_consumed.payload[0]);
 
         // verify noskip
         if (next_consumed.item_no != item_no_prev+1){
@@ -224,10 +253,9 @@ void *consumer(void *arg)
             break;
         }
 
-        // verify with checksum
+        // verify checksums
         cksum1 = ip_checksum(next_consumed.payload, PAYLOAD_SIZE);
         cksum2 = next_consumed.cksum;
-
         if (cksum1 != cksum2){
             printf("Checksum mismatch: received 0x%x, expected 0x%x \n", cksum2, cksum1);
             exit(1);
@@ -238,20 +266,32 @@ void *consumer(void *arg)
         // increment index of out
         incOut(sBuffer);
 
+        //
+        /////////////////////
+
+        // signal that we removed from buffer
         sem_post(&empty);
+        // unlock critical section
         pthread_mutex_unlock(&mutex);
+
         usleep(5e4);
     }
 
 }
+///////////////////////
 
+
+
+///////////////////////
+// On Exit - Cleanup
+//
 
 void sig_handler(int sig)
 {
      printf("%s:: Got the Signal %d \n", __FUNCTION__, sig);
     // remove the shared memory object
     shm_unlink(name);
-   
+
     // destroy the semiphores
     sem_destroy(&empty);
     sem_destroy(&full);
@@ -261,3 +301,4 @@ void sig_handler(int sig)
 
     exit(1);
 }
+///////////////////////
