@@ -5,12 +5,13 @@ The idea is to write a C/C++ program that creates two threads. The first thread 
 
 
 
-**Linux**
-- gcc compiler
 
 
 ### Compile and Deployment
 In order to compile the project, it is required to have gcc
+
+**Linux**
+- gcc compiler
 
 ```
 gcc -c ip_checksum.c 
