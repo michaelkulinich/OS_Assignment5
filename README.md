@@ -1,4 +1,5 @@
-# Operating Systems: Assignment 5
+# Thread Synchronization
+## Operating Systems: Assignment 5
 Michael Kulinich
 kulinich@chapman.edu
 
@@ -6,6 +7,8 @@ Ayden Best
 bbest@chapman.edu
 
 CPSC 380-01
+## Objective 
+The object of this assignment is to use semaphores to protect the critical section between two competing threads
 
 ## Task: Using Threads and Mutex/Conting Semaphores for the producer-consumer problem
 The idea is to write a C/C++ program that creates two threads. The first thread is the consumer thread that consumes the data written to a shared memory buffer. The second thread is the producer thread that “produces” the data for the shared memory buffer. In order to prevent a race condition (e.g. the consumer reading before the producer writing) use a mutex semaphore and counting semaphores to coordinate when each thread can safely write or read to/from a common shared memory region.
