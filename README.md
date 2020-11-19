@@ -1,4 +1,4 @@
-# Thread Synchronization
+# Thread Synchronization: Producer-Consumer Problem
 ## Operating Systems: Assignment 5
 Michael Kulinich
 kulinich@chapman.edu
