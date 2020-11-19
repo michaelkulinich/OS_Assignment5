@@ -53,7 +53,7 @@
   {
     // ensure file is executed corrctly
     if (argc != 2) {
-        printf("Usage Error: inlcude number of bits \n");
+        printf("Usage Error: inlcude number of items in the shared buffer as an argument \n");
         return -1;
     }
     if (atoi(argv[1]) > 480 || atoi(argv[1]) <= 0) {
