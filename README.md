@@ -13,17 +13,28 @@ The object of this assignment is to use semaphores to protect the critical secti
 ## Task: Using Threads and Mutex/Conting Semaphores for the producer-consumer problem
 The idea is to write a C/C++ program that creates two threads. The first thread is the consumer thread that consumes the data written to a shared memory buffer. The second thread is the producer thread that “produces” the data for the shared memory buffer. In order to prevent a race condition (e.g. the consumer reading before the producer writing) use a mutex semaphore and counting semaphores to coordinate when each thread can safely write or read to/from a common shared memory region.
 
+### Program Implementation
+The producer/consumer program (prodcon.c) that takes one argument from the command line (no prompting the user from within the program). 
+ 
+1.	To start the prodcon program 
 
+ `./prodcon <nitems> where the argument <nitems> indicates the number of items in the shared buffer.`
+ 
+2.	The main process is to create the shared memory region from the heap based upon nitems, initialize the mutex the counting semaphores and create both the producer and consumer threads.. 
+3.	The producer thread is to create the data item(s) which includes the item number, checksum and random data. 
+4.	The consumer thread is to read the shared memory buffer of item(s), validate the item number then calculate the checksum and compare that with the value stored in the shared memory buffer to ensure that the data did not get corrupted.
 
-
+### Requirements
+Nothing needs to be installed. Linux Fedora 64-bit was used
 
 ### Compile and Deployment
 
 **Linux**
-Run 'make'
+- use gcc compiler
+To Compile Run `make`
+- This executes the Makefile
 
 Makefile operations:
-- use gcc compiler
 - create a static library for the checksum function
 ```
 // create the object file
@@ -35,9 +46,11 @@ ar -rc libip_checksum.a ip_checksum.o
 // tell the compiler to look in our library
 gcc prodcon.c -L. -lip_checksum -o prodcon -lrt -lpthread
 
-./prodcon [buffer size]
-
 ```
+
+To execute run `./prodcon [buffer size]`
+
+
 
 ### Sample output
 <pre><code>
